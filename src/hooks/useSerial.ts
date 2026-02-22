@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-// Web Serial API types
 interface SerialPort {
     open(options: { baudRate: number }): Promise<void>;
     close(): Promise<void>;
@@ -84,9 +83,7 @@ export const useSerial = () => {
     useEffect(() => {
         return () => {
             if (readerRef.current) {
-                readerRef.current.cancel().catch(() => {
-                    // ignore teardown errors
-                });
+                readerRef.current.cancel().catch(() => {});
             }
             if (writerRef.current) {
                 writerRef.current.releaseLock();

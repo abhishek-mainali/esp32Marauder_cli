@@ -32,7 +32,18 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
     const commandRef = useRef<string>("");
     const isAlive = useRef<boolean>(false);
     const [inputValue, setInputValue] = useState("");
+    const [isNarrow, setIsNarrow] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const updateViewport = () => {
+            setIsNarrow(window.innerWidth < 768);
+        };
+
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+        return () => window.removeEventListener('resize', updateViewport);
+    }, []);
 
     const safeWrite = useCallback((data: string) => {
         if (isAlive.current && xtermRef.current) {
@@ -50,18 +61,13 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
         const term = xtermRef.current;
         const container = containerRef.current;
 
-        // Heuristic values for character dimensions based on font-size 14px and JetBrains Mono
-        // These might need fine-tuning based on actual rendering
-        const charWidth = 8.4; // Approximate width of a character
-        const charHeight = 18; // Approximate height of a character (line height)
+        const charWidth = 8.4;
+        const charHeight = 18;
 
-        // Calculate columns and rows based on container dimensions
-        // Ensure minimum dimensions to prevent issues with very small containers
         const cols = Math.max(20, Math.floor(container.clientWidth / charWidth));
         const rows = Math.max(5, Math.floor(container.clientHeight / charHeight));
 
         try {
-            // Only resize if we have valid positive dimensions
             if (cols > 0 && rows > 0) {
                 term.resize(cols, rows);
             }
@@ -70,7 +76,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
         }
     }, []);
 
-    // Atomic setup and teardown via functional ref
     const getThemeColors = useCallback((t: 'pink' | 'green' | 'blue') => {
         switch (t) {
             case 'green': return { accent: '#00ff9c', glow: 'rgba(0, 255, 156, 0.3)' };
@@ -81,7 +86,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
 
     const setTerminalRef = useCallback((node: HTMLDivElement | null) => {
         if (node) {
-            // SETUP
             containerRef.current = node;
             isAlive.current = true;
 
@@ -102,10 +106,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
             term.open(node);
             xtermRef.current = term;
 
-            // CRITICAL: Monkey-patch xterm's internal Viewport to prevent
-            // "Cannot read properties of undefined (reading 'dimensions')"
-            // This error occurs inside xterm's own code when Viewport._innerRefresh
-            // runs before _renderService is initialized or after it's disposed.
             try {
                 const viewport = (term as PatchedTerminal)._core?.viewport;
                 if (viewport && viewport._innerRefresh) {
@@ -117,7 +117,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
                     };
                 }
             } catch {
-                // Patching failed, non-critical
             }
 
             term.writeln('\x1b[1;35mESP32 Marauder Web CLI // System Ready\x1b[0m');
@@ -126,13 +125,13 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
             term.onData(data => {
                 if (!isAlive.current) return;
                 const code = data.charCodeAt(0);
-                if (code === 13) { // Enter
+                if (code === 13) {
                     const cmd = commandRef.current.trim();
                     onCommand(cmd);
                     term.writeln('');
                     commandRef.current = "";
                     term.write('\x1b[32m>\x1b[0m ');
-                } else if (code === 127) { // Backspace
+                } else if (code === 127) {
                     if (commandRef.current.length > 0) {
                         commandRef.current = commandRef.current.slice(0, -1);
                         term.write('\b \b');
@@ -143,10 +142,8 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
                 }
             });
 
-            // Initial resize after a short delay to ensure DOM settle
             setTimeout(safeResize, 100);
         } else {
-            // TEARDOWN
             isAlive.current = false;
             if (xtermRef.current) {
                 try {
@@ -160,7 +157,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
         }
     }, [getThemeColors, onCommand, safeResize, theme]);
 
-    // Handle theme changes
     useEffect(() => {
         if (xtermRef.current && isAlive.current && themeRef.current !== theme) {
             themeRef.current = theme;
@@ -174,14 +170,12 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
         }
     }, [theme, getThemeColors]);
 
-    // Handle incoming serial data
     useEffect(() => {
         if (incomingData) {
             safeWrite(incomingData);
         }
     }, [incomingData, safeWrite]);
 
-    // Resize observer for the container and window resize listener
     useEffect(() => {
         if (!containerRef.current) return;
 
@@ -217,7 +211,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
     return (
         <div className="terminal-container glass-panel" style={{
             height: '100%',
-            minHeight: '450px',
+            minHeight: isNarrow ? '320px' : '450px',
             padding: '10px',
             overflow: 'hidden',
             display: 'flex',
@@ -227,19 +221,19 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
         }}>
             <div ref={setTerminalRef} style={{ flex: 1, width: '100%', overflow: 'hidden' }} />
 
-            {/* COMMAND ENTRY AREA */}
             <div style={{
                 marginTop: '10px',
                 display: 'flex',
+                flexDirection: isNarrow ? 'column' : 'row',
                 gap: '10px',
                 background: 'rgba(0,0,0,0.6)',
-                padding: '12px 15px',
+                padding: isNarrow ? '10px' : '12px 15px',
                 borderRadius: '8px',
                 border: '1px solid var(--accent)',
                 boxShadow: '0 0 15px rgba(255, 47, 146, 0.1)',
                 zIndex: 10
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', color: 'var(--accent)', fontWeight: 'bold', fontSize: '1rem' }}>&gt;_</div>
+                <div style={{ display: isNarrow ? 'none' : 'flex', alignItems: 'center', color: 'var(--accent)', fontWeight: 'bold', fontSize: '1rem' }}>&gt;_</div>
                 <input
                     ref={inputRef}
                     autoFocus
@@ -257,7 +251,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
                         color: 'white',
                         outline: 'none',
                         fontFamily: 'JetBrains Mono, monospace',
-                        fontSize: '1rem'
+                        fontSize: isNarrow ? '0.92rem' : '1rem'
                     }}
                 />
                 <button
@@ -266,11 +260,12 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
                         background: 'var(--accent)',
                         color: 'black',
                         border: 'none',
-                        padding: '6px 20px',
+                        padding: isNarrow ? '8px 12px' : '6px 20px',
                         borderRadius: '4px',
                         fontWeight: '900',
-                        fontSize: '0.8rem',
+                        fontSize: isNarrow ? '0.75rem' : '0.8rem',
                         cursor: 'pointer',
+                        width: isNarrow ? '100%' : 'auto',
                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         boxShadow: '0 0 10px var(--accent-glow)'
                     }}

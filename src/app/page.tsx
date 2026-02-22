@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useSerial } from '@/hooks/useSerial';
 import dynamic from 'next/dynamic';
 import { Power, Terminal as TerminalIcon, Cpu, Activity, Zap, Play } from 'lucide-react';
 import CommandGuide from '@/components/CommandGuide';
 import Visualizer from '@/components/Visualizer';
 
-// Load Terminal with SSR disabled
 const TerminalComponent = dynamic(() => import('@/components/Terminal'), { ssr: false });
 
 export default function Home() {
@@ -17,6 +16,22 @@ export default function Home() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [zenMode, setZenMode] = useState(false);
   const [theme, setTheme] = useState<'pink' | 'green' | 'blue'>('pink');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) {
+        setLeftSidebarOpen(false);
+        setRightSidebarOpen(false);
+      }
+    };
+
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
 
   const handleCommand = useCallback((cmd: string) => {
     send(cmd);
@@ -27,35 +42,36 @@ export default function Home() {
     setIsExecuting(true);
     for (const cmd of commands) {
       send(cmd);
-      await new Promise(resolve => setTimeout(resolve, 800)); // Delay between commands
+      await new Promise(resolve => setTimeout(resolve, 800));
     }
     setIsExecuting(false);
   };
 
   return (
-    <main className={`theme-${theme}`} style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: 'hidden' }}>
-      {/* HEADER */}
+    <main className={`theme-${theme}`} style={{ height: isMobile ? 'auto' : '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: isMobile ? 'auto' : 'hidden' }}>
       <header className="glass-panel" style={{
         margin: '10px',
-        padding: '8px 20px',
+        padding: isMobile ? '12px' : '8px 20px',
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: isMobile ? 'stretch' : 'center',
+        gap: isMobile ? '10px' : '0',
         zIndex: 100,
         boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
         borderBottom: '1px solid var(--accent-glow)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '20px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: isMobile ? '100%' : 'auto' }}>
             <div style={{ background: 'rgba(255,47,146,0.1)', padding: '8px', borderRadius: '10px', display: 'flex' }}>
               <Zap size={24} color="var(--accent)" />
             </div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: '900', letterSpacing: '3px', margin: 0 }}>
+            <h1 style={{ fontSize: isMobile ? '1rem' : '1.2rem', fontWeight: '900', letterSpacing: isMobile ? '1.5px' : '3px', margin: 0 }}>
               <span className="neon-text">MARAUDER</span> <span style={{ color: 'white', opacity: 0.8 }}>CLI</span>
             </h1>
           </div>
 
-          <div style={{ display: 'flex', gap: '5px' }}>
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
               title={leftSidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
@@ -142,8 +158,7 @@ export default function Home() {
             </button>
           </div>
 
-          {/* THEME PICKER */}
-          <div style={{ display: 'flex', gap: '10px', marginLeft: '15px', padding: '5px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid var(--panel-border)' }}>
+          <div style={{ display: 'flex', gap: '10px', marginLeft: isMobile ? '0' : '15px', padding: '5px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid var(--panel-border)' }}>
             <button
               onClick={() => setTheme('pink')}
               title="Pink Theme"
@@ -201,8 +216,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ fontSize: '0.8rem', color: connected ? 'var(--green)' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'space-between' : 'flex-start', gap: '12px', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: isMobile ? '0.72rem' : '0.8rem', color: connected ? 'var(--green)' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: connected ? 'var(--green)' : '#444', boxShadow: connected ? '0 0 10px var(--green)' : 'none' }} />
             {connected ? 'LINK: ESTABLISHED' : 'LINK: DISCONNECTED'}
           </div>
@@ -213,7 +228,7 @@ export default function Home() {
               background: connected ? 'rgba(255,47,146,0.1)' : 'var(--accent)',
               border: connected ? '1px solid var(--accent)' : 'none',
               color: connected ? 'var(--accent)' : 'black',
-              padding: '8px 24px',
+              padding: isMobile ? '8px 14px' : '8px 24px',
               borderRadius: '8px',
               fontWeight: '800',
               cursor: 'pointer',
@@ -221,7 +236,7 @@ export default function Home() {
               alignItems: 'center',
               gap: '10px',
               transition: 'all 0.3s',
-              fontSize: '0.9rem'
+              fontSize: isMobile ? '0.78rem' : '0.9rem'
             }}
           >
             <Power size={18} />
@@ -230,18 +245,19 @@ export default function Home() {
         </div>
       </header>
 
-      {/* DASHBOARD GRID */}
       <div style={{
         flex: 1,
         padding: '0 10px 10px 10px',
         display: 'grid',
-        gridTemplateColumns: `${leftSidebarOpen ? '300px' : '0px'} 1fr ${rightSidebarOpen ? '280px' : '0px'}`,
+        gridTemplateColumns: isMobile ? '1fr' : `${leftSidebarOpen ? '300px' : '0px'} 1fr ${rightSidebarOpen ? '280px' : '0px'}`,
         gap: (leftSidebarOpen || rightSidebarOpen) ? '10px' : '0',
         minHeight: 0,
+        overflowY: isMobile ? 'auto' : 'hidden',
         transition: 'grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
       }}>
-        {/* LEFT PANEL: GUIDES */}
         <aside style={{
+          display: isMobile ? (leftSidebarOpen ? 'block' : 'none') : 'block',
+          order: isMobile ? 2 : 0,
           minHeight: 0,
           overflow: 'hidden',
           opacity: leftSidebarOpen ? 1 : 0,
@@ -251,10 +267,8 @@ export default function Home() {
           <CommandGuide onSelect={handleCommand} />
         </aside>
 
-        {/* CENTER PANEL: TERMINAL */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 0 }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 0, order: isMobile ? 1 : 0 }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0 }}>
-            {/* HEADER FOR MAIN CONTENT AREA */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
               <TerminalIcon size={18} color="var(--accent)" />
               <h2 style={{ fontSize: '1rem', fontWeight: '800', letterSpacing: '1px' }}>SYSTEM TERMINAL</h2>
@@ -267,7 +281,7 @@ export default function Home() {
 
           <div className="glass-panel" style={{ padding: '20px' }}>
             <h3 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '800' }}>AUTOMATED MACROS</h3>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
               <button
                 disabled={!connected || isExecuting}
                 onClick={() => runMacro(["scanap", "stopscan", "listap"])}
@@ -282,7 +296,9 @@ export default function Home() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  opacity: connected ? 1 : 0.5
+                  opacity: connected ? 1 : 0.5,
+                  width: isMobile ? '100%' : 'auto',
+                  justifyContent: 'center'
                 }}
               >
                 <Play size={14} fill="currentColor" /> Full Recon
@@ -301,7 +317,9 @@ export default function Home() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  opacity: connected ? 1 : 0.5
+                  opacity: connected ? 1 : 0.5,
+                  width: isMobile ? '100%' : 'auto',
+                  justifyContent: 'center'
                 }}
               >
                 <Play size={14} fill="currentColor" /> Targeted Attack
@@ -310,9 +328,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* RIGHT PANEL: DEVICE INFO */}
         <aside style={{
-          display: 'flex',
+          display: isMobile ? (rightSidebarOpen ? 'flex' : 'none') : 'flex',
+          order: isMobile ? 3 : 0,
           flexDirection: 'column',
           gap: '15px',
           overflow: 'hidden',
@@ -342,7 +360,7 @@ export default function Home() {
             )}
           </div>
 
-          <div style={{ flex: 1, minHeight: '150px' }}>
+          <div style={{ flex: 1, minHeight: isMobile ? '200px' : '150px' }}>
             <Visualizer />
           </div>
 
@@ -366,7 +384,7 @@ export default function Home() {
         </aside>
       </div>
 
-      <footer style={{ padding: '10px', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.6 }}>
+      <footer style={{ padding: '10px', textAlign: 'center', fontSize: isMobile ? '0.68rem' : '0.75rem', color: 'var(--text-secondary)', opacity: 0.6 }}>
         ESP32 MARAUDER WEB CLI // VERSION 1.0 // Abhishek_Mainali
       </footer>
     </main>

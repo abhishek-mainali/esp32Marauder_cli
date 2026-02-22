@@ -51,7 +51,6 @@ pre,
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Glass Panels */
 .glass-panel {
   background: var(--panel);
   backdrop-filter: var(--glass);
@@ -70,7 +69,6 @@ pre,
   text-shadow: 0 0 8px var(--accent-glow);
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
