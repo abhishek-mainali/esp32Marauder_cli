@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 
 const createBars = (count: number): number[] =>
-    Array.from({ length: count }, () => Math.random() * 100);
+    Array.from({ length: count }, (_, index) => 35 + ((index * 11) % 55));
 
 const Visualizer: React.FC = () => {
     const [bars, setBars] = useState<number[]>(() => createBars(30));

@@ -9,6 +9,19 @@ import Visualizer from '@/components/Visualizer';
 
 const TerminalComponent = dynamic(() => import('@/components/Terminal'), { ssr: false });
 
+const parseDeviceInfo = (info: string) => {
+  return info
+    .split('\n')
+    .map((line) => {
+      const [rawKey, ...rest] = line.split(':');
+      const key = rawKey?.trim();
+      const value = rest.join(':').trim();
+      if (!key || !value) return null;
+      return { key, value };
+    })
+    .filter((item): item is { key: string; value: string } => item !== null);
+};
+
 export default function Home() {
   const { connected, deviceInfo, incomingData, connect, disconnect, send, error } = useSerial();
   const [isExecuting, setIsExecuting] = useState(false);
@@ -17,9 +30,15 @@ export default function Home() {
   const [zenMode, setZenMode] = useState(false);
   const [theme, setTheme] = useState<'pink' | 'green' | 'blue'>('pink');
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const deviceDetails = parseDeviceInfo(deviceInfo);
 
   useEffect(() => {
     const updateViewport = () => {
+      const width = window.innerWidth;
+      const tablet = width < 1400;
+      setIsTablet(tablet);
+
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
       if (mobile) {
@@ -37,6 +56,9 @@ export default function Home() {
     send(cmd);
   }, [send]);
 
+  const showLeftSidebar = leftSidebarOpen;
+  const showRightSidebar = !isTablet && rightSidebarOpen;
+
   const runMacro = async (commands: string[]) => {
     if (!connected || isExecuting) return;
     setIsExecuting(true);
@@ -48,9 +70,9 @@ export default function Home() {
   };
 
   return (
-    <main className={`theme-${theme}`} style={{ height: isMobile ? 'auto' : '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: isMobile ? 'auto' : 'hidden' }}>
+    <main className={`theme-${theme}`} style={{ height: isMobile ? 'auto' : '100dvh', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: isMobile ? 'auto' : 'hidden' }}>
       <header className="glass-panel" style={{
-        margin: '10px',
+        margin: isMobile ? '8px' : '10px',
         padding: isMobile ? '12px' : '8px 20px',
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
@@ -247,34 +269,37 @@ export default function Home() {
 
       <div style={{
         flex: 1,
-        padding: '0 10px 10px 10px',
+        padding: isMobile ? '0 8px 12px 8px' : '0 10px 10px 10px',
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : `${leftSidebarOpen ? '300px' : '0px'} 1fr ${rightSidebarOpen ? '280px' : '0px'}`,
-        gap: (leftSidebarOpen || rightSidebarOpen) ? '10px' : '0',
+        gridTemplateColumns: isMobile ? '1fr' : `${showLeftSidebar ? (isTablet ? '250px' : '300px') : '0px'} 1fr ${showRightSidebar ? '280px' : '0px'}`,
+        gap: isMobile ? '12px' : ((showLeftSidebar || showRightSidebar) ? '10px' : '0'),
         minHeight: 0,
-        overflowY: isMobile ? 'auto' : 'hidden',
+        overflowY: isMobile ? 'visible' : 'auto',
         transition: 'grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
       }}>
         <aside style={{
-          display: isMobile ? (leftSidebarOpen ? 'block' : 'none') : 'block',
+          display: isMobile ? (showLeftSidebar ? 'block' : 'none') : 'block',
           order: isMobile ? 2 : 0,
           minHeight: 0,
           overflow: 'hidden',
-          opacity: leftSidebarOpen ? 1 : 0,
+          opacity: showLeftSidebar ? 1 : 0,
           transition: 'opacity 0.2s',
-          pointerEvents: leftSidebarOpen ? 'auto' : 'none'
+          pointerEvents: showLeftSidebar ? 'auto' : 'none'
         }}>
           <CommandGuide onSelect={handleCommand} />
         </aside>
 
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 0, order: isMobile ? 1 : 0 }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0 }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 0, order: isMobile ? 1 : 0, overflowY: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
               <TerminalIcon size={18} color="var(--accent)" />
               <h2 style={{ fontSize: '1rem', fontWeight: '800', letterSpacing: '1px' }}>SYSTEM TERMINAL</h2>
             </div>
 
-            <div style={{ flex: 1, minHeight: 0 }}>
+            <div style={{
+              height: isMobile ? '300px' : isTablet ? '380px' : '460px',
+              minHeight: isMobile ? '260px' : '340px'
+            }}>
               <TerminalComponent onCommand={handleCommand} incomingData={incomingData} theme={theme} />
             </div>
           </div>
@@ -329,14 +354,15 @@ export default function Home() {
         </section>
 
         <aside style={{
-          display: isMobile ? (rightSidebarOpen ? 'flex' : 'none') : 'flex',
+          display: isMobile ? (showRightSidebar ? 'flex' : 'none') : (showRightSidebar ? 'flex' : 'none'),
           order: isMobile ? 3 : 0,
           flexDirection: 'column',
           gap: '15px',
-          overflow: 'hidden',
-          opacity: rightSidebarOpen ? 1 : 0,
+          minHeight: 0,
+          overflowY: 'auto',
+          opacity: showRightSidebar ? 1 : 0,
           transition: 'opacity 0.2s',
-          pointerEvents: rightSidebarOpen ? 'auto' : 'none'
+          pointerEvents: showRightSidebar ? 'auto' : 'none'
         }}>
           <div className="glass-panel" style={{ padding: '20px', border: '1px solid var(--panel-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
@@ -349,9 +375,20 @@ export default function Home() {
               borderRadius: '8px',
               border: '1px solid rgba(0,255,156,0.1)'
             }}>
-              <pre style={{ fontSize: '0.8rem', color: 'var(--green)', whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'JetBrains Mono' }}>
-                {deviceInfo}
-              </pre>
+              {deviceDetails.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {deviceDetails.map(({ key, value }) => (
+                    <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '4px' }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.7px' }}>{key}</span>
+                      <span style={{ color: key.toLowerCase() === 'status' && value.toLowerCase().includes('connected') ? 'var(--green)' : 'var(--text-primary)', fontSize: '0.78rem', fontFamily: 'JetBrains Mono', fontWeight: 700, textAlign: 'right', wordBreak: 'break-word' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontFamily: 'JetBrains Mono' }}>
+                  {deviceInfo}
+                </div>
+              )}
             </div>
             {error && (
               <div style={{ marginTop: '15px', color: '#ff4b4b', fontSize: '0.75rem', background: 'rgba(255,75,75,0.1)', padding: '8px', borderRadius: '4px', border: '1px solid rgba(255,75,75,0.2)' }}>

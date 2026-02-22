@@ -10,21 +10,6 @@ interface TerminalComponentProps {
     theme: 'pink' | 'green' | 'blue';
 }
 
-type XtermViewportLike = {
-    _innerRefresh?: () => void;
-    _renderService?: {
-        dimensions?: unknown;
-    };
-};
-
-type XtermCoreLike = {
-    viewport?: XtermViewportLike;
-};
-
-type PatchedTerminal = Terminal & {
-    _core?: XtermCoreLike;
-};
-
 const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomingData, theme }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const xtermRef = useRef<Terminal | null>(null);
@@ -105,19 +90,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
 
             term.open(node);
             xtermRef.current = term;
-
-            try {
-                const viewport = (term as PatchedTerminal)._core?.viewport;
-                if (viewport && viewport._innerRefresh) {
-                    const origInnerRefresh = viewport._innerRefresh.bind(viewport);
-                    viewport._innerRefresh = function () {
-                        if (this._renderService?.dimensions) {
-                            origInnerRefresh();
-                        }
-                    };
-                }
-            } catch {
-            }
 
             term.writeln('\x1b[1;35mESP32 Marauder Web CLI // System Ready\x1b[0m');
             term.write('\x1b[32m>\x1b[0m ');
@@ -211,7 +183,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
     return (
         <div className="terminal-container glass-panel" style={{
             height: '100%',
-            minHeight: isNarrow ? '320px' : '450px',
+            minHeight: 0,
             padding: '10px',
             overflow: 'hidden',
             display: 'flex',
