@@ -34,4 +34,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the fork-and-contribute workflow and 
 I am not responsible for any damage caused by this project.
 
 ---
-Developed by Abhishek, 1gab1 for love of cyber security
+Developed by Abhishek, 1gab1 with alot of coffee
