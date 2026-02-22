@@ -35,6 +35,9 @@ export const useSerial = () => {
     const readerRef = useRef<SerialPortStreamReader | null>(null);
     const writerRef = useRef<SerialPortStreamWriter | null>(null);
 
+    const isWebSerialSupported = () =>
+        typeof navigator !== 'undefined' && 'serial' in navigator;
+
     const readLoop = useCallback(async () => {
         if (!portRef.current || !readerRef.current) return;
 
@@ -54,6 +57,10 @@ export const useSerial = () => {
     const connect = useCallback(async (baudRate: number = 115200) => {
         try {
             setError(null);
+            if (!isWebSerialSupported()) {
+                setError('Web Serial API is not supported in this browser. Use Chrome, Edge, or Opera over HTTPS (or localhost).');
+                return false;
+            }
             const nav = navigator as unknown as { serial: { requestPort: () => Promise<SerialPort> } };
             const port = await nav.serial.requestPort();
             await port.open({ baudRate });
@@ -72,6 +79,19 @@ export const useSerial = () => {
             setError(err instanceof Error ? err.message : String(err));
             return false;
         }
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (readerRef.current) {
+                readerRef.current.cancel().catch(() => {
+                    // ignore teardown errors
+                });
+            }
+            if (writerRef.current) {
+                writerRef.current.releaseLock();
+            }
+        };
     }, []);
 
     useEffect(() => {

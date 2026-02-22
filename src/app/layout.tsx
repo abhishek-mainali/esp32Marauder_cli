@@ -14,7 +14,18 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ESP32 Marauder CLI",
-  description: "Advanced ESP32 Marauder Web CLI by Abhishek Mainali",
+  description: "Web Serial powered CLI interface for ESP32 Marauder with command guide, live terminal, and signal monitor.",
+  applicationName: "ESP32 Marauder CLI",
+  keywords: ["ESP32 Marauder", "Web Serial", "Next.js", "WiFi security", "CLI"],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "ESP32 Marauder CLI",
+    description: "Web Serial powered CLI interface for ESP32 Marauder.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

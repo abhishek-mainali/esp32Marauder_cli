@@ -1,14 +1,29 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Terminal } from 'xterm';
-import 'xterm/css/xterm.css';
+import { Terminal } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
 
 interface TerminalComponentProps {
     onCommand: (cmd: string) => void;
     incomingData: string;
     theme: 'pink' | 'green' | 'blue';
 }
+
+type XtermViewportLike = {
+    _innerRefresh?: () => void;
+    _renderService?: {
+        dimensions?: unknown;
+    };
+};
+
+type XtermCoreLike = {
+    viewport?: XtermViewportLike;
+};
+
+type PatchedTerminal = Terminal & {
+    _core?: XtermCoreLike;
+};
 
 const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomingData, theme }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -92,7 +107,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
             // This error occurs inside xterm's own code when Viewport._innerRefresh
             // runs before _renderService is initialized or after it's disposed.
             try {
-                const viewport = (term as any)._core?.viewport;
+                const viewport = (term as PatchedTerminal)._core?.viewport;
                 if (viewport && viewport._innerRefresh) {
                     const origInnerRefresh = viewport._innerRefresh.bind(viewport);
                     viewport._innerRefresh = function () {
@@ -101,7 +116,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
                         }
                     };
                 }
-            } catch (e) {
+            } catch {
                 // Patching failed, non-critical
             }
 
@@ -143,7 +158,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ onCommand, incomi
             }
             containerRef.current = null;
         }
-    }, [onCommand, safeResize]);
+    }, [getThemeColors, onCommand, safeResize, theme]);
 
     // Handle theme changes
     useEffect(() => {

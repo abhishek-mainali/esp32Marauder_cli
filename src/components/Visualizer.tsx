@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 
+const createBars = (count: number): number[] =>
+    Array.from({ length: count }, () => Math.random() * 100);
+
 const Visualizer: React.FC = () => {
-    const [bars, setBars] = useState<number[]>([]);
+    const [bars, setBars] = useState<number[]>(() => createBars(30));
 
     useEffect(() => {
-        // Hydration-safe random data
-        setBars([...Array(30)].map(() => Math.random() * 100));
-
         const interval = setInterval(() => {
             setBars(prev => prev.map(h => {
                 const change = (Math.random() - 0.5) * 20;

@@ -1,6 +1,10 @@
 # ESP32 Marauder Web CLI
 
-A premium, feature-rich web interface for the ESP32 Marauder, built with Next.js and Web Serial API.
+Web interface for controlling ESP32 Marauder through the browser using the Web Serial API.
+
+## Project Overview
+
+ESP32 Marauder Web CLI is a browser-based control panel for the ESP32 Marauder device. It provides a real-time terminal, command discovery, and live monitoring in a single interface, so users can connect over Web Serial and operate the device without installing a desktop client.
 
 ## Features
 
@@ -18,12 +22,12 @@ A premium, feature-rich web interface for the ESP32 Marauder, built with Next.js
 3. **Click "CONNECT"** in the top right corner and select your device's port.
 4. **Start Auditing!**
 
+---
+Developed by Abhishek Mainali for love of cyber security
+
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Fork and Contribute License (FCL) v1.0 — see [LICENSE](LICENSE).
 
 ## warning
 I am not responsible for any damage caused by this project.
-
-
----
-Developed by Abhishek, 1gab1 for love of cyber security

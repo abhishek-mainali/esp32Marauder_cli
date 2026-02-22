@@ -1,21 +1,41 @@
-MIT License
+ESP32 Marauder CLI – Fork and Contribute License (FCL) v1.0
 
 Copyright (c) 2026 Abhishek Mainali
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Purpose
+This project is source-available for community improvement through contribution
+to the original repository.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. Permission Granted
+You are permitted to:
+- View and study the source code.
+- Fork this repository only for development, testing, and contribution purposes.
+- Modify your fork and submit pull requests to the original repository.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+3. Restrictions
+You may NOT, without explicit prior written permission from the copyright owner:
+- Publish, distribute, sublicense, or sell this software (or modified versions)
+	as a separate or competing product.
+- Rebrand, clone, mirror, or redistribute this project as an independent public
+	release intended for end users.
+- Use this software (or modified versions) for commercial SaaS, hosted products,
+	paid services, or monetized distribution.
+- Remove or alter copyright, attribution, or license notices.
+
+4. Contribution Scope
+Forks are allowed only as a path to contribute improvements back to the
+original project via pull requests.
+
+5. Ownership
+All rights, title, and interest in the original project remain with the
+copyright owner.
+
+6. No Warranty
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
