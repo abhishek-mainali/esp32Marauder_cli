@@ -18,11 +18,12 @@ A premium, feature-rich web interface for the ESP32 Marauder, built with Next.js
 3. **Click "CONNECT"** in the top right corner and select your device's port.
 4. **Start Auditing!**
 
----
-Developed by Abhishek Mainali for love of cyber security
-
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## warning
 I am not responsible for any damage caused by this project.
+
+
+---
+Developed by Abhishek, 1gab1 for love of cyber security
