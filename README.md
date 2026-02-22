@@ -22,12 +22,16 @@ ESP32 Marauder Web CLI is a browser-based control panel for the ESP32 Marauder d
 3. **Click "CONNECT"** in the top right corner and select your device's port.
 4. **Start Auditing!**
 
----
-Developed by Abhishek Mainali for love of cyber security
-
 ## License
 
 Fork and Contribute License (FCL) v1.0 — see [LICENSE](LICENSE).
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the fork-and-contribute workflow and PR requirements.
+
 ## warning
 I am not responsible for any damage caused by this project.
+
+---
+Developed by Abhishek, 1gab1 for love of cyber security
